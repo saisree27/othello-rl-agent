@@ -1,7 +1,8 @@
 import random
 import copy
-from src.strategy import Strategy
-
+from strategy import Strategy
+from agent import AlphaBeta
+from env import OthelloEnv
 
 class RandomBot:
 
@@ -206,6 +207,28 @@ class Best_AI_bot:
         print("row: " + str((my_move // 10)), " col: " + str((my_move % 10)))
         return (my_move // 10, my_move % 10), 0
 
-
+import numpy as np
 class Alpha_beta_AI_bot:
-    pass
+    def best_strategy(self, board, color):
+
+        if color == '#ffffff':
+            color = OthelloEnv.WHITE
+        else:
+            color = OthelloEnv.BLACK
+
+        state = np.zeros(64)
+        counter = 0
+        for row in board:
+            for loc in row:
+                if loc == '.':
+                    state[counter] = 0
+                if loc == 'O':
+                    state[counter] = 1
+                if loc == '@':
+                    state[counter] = -1
+                counter += 1
+
+        agent = AlphaBeta(OthelloEnv(state, color))
+        index = agent.play()
+
+        return (index // 8, index % 8), 0
