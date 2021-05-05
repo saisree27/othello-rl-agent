@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import tkinter as tk
-from bots import RandomBot, Minimax_AI_bot, Alpha_beta_AI_bot, Best_AI_bot
+from src.bots import RandomBot, Minimax_AI_bot, Alpha_beta_AI_bot, Best_AI_bot
 
 # constants
 delay_time = 0

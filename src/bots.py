@@ -1,6 +1,6 @@
 import random
 import copy
-from strategy import Strategy
+from src.strategy import Strategy
 
 
 class RandomBot:
