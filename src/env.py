@@ -16,22 +16,25 @@ class OthelloEnv():
         self.action_space = np.zeros(66)
         self.player_to_move = OthelloEnv.BLACK if turn is None else turn
         self.state_size = 64
+        self.prev_state = None
         if board is None:
             self.reset()
         else:
             self.state = board
             self.actions = self.possible_actions()
-            result, self.done = self.check_game_over(board)
+            result, self.done = self.check_game_over()
             self.reward = result if self.done else 0
 
     def step(self, action):
+        self.prev_state = np.copy(self.state)
+
         if action == 64 or action == 65:
             observation = self.state
             result, self.done = self.check_game_over()
             self.reward = result if self.done else 0
             self.player_to_move *= -1
             self.actions = self.possible_actions()
-            return observation, self.reward, self.done, -self.player_to_move
+            return observation, self.reward, self.done, self.player_to_move
 
         color = self.player_to_move
         self.state[action] = color
@@ -57,7 +60,13 @@ class OthelloEnv():
         self.reward = result if self.done else 0
         self.player_to_move *= -1
         self.actions = self.possible_actions()
-        return observation, self.reward, self.done, -self.player_to_move        
+        return observation, self.reward, self.done, self.player_to_move        
+
+    def pop(self):
+        self.state = self.prev_state
+        self.player_to_move *= -1
+        self.actions = self.possible_actions()
+
 
     def out_of_bounds(self, location, move):
 
@@ -110,9 +119,9 @@ class OthelloEnv():
                 moves += self.check_squares(location, color)
         
         if len(moves) == 0:
-            return 64 if self.player_to_move == OthelloEnv.BLACK else 65
+            return [64] if self.player_to_move == OthelloEnv.BLACK else [65]
 
-        return moves
+        return list(set(moves))
 
     def reset(self):
         self.state = np.zeros(64)
@@ -137,7 +146,7 @@ class OthelloEnv():
         if len(moves) == 0:
             return 64 if turn == OthelloEnv.BLACK else 65
 
-        return moves
+        return list(set(moves))
 
     def check_game_over(self):
         if (self.state == 0).sum() == 0:
@@ -172,24 +181,36 @@ class OthelloEnv():
         print(string)
         return string
 
-env = OthelloEnv()
-env.render()
-
-import random
-choice = random.choice(env.actions)
-
-observation, reward, done, turn = env.step(choice)
-env.render()
-
-while not done:
-    print("TAKING ACTION")
-    actions = env.actions
-    if actions != 64 and actions != 65:
-        action = random.choice(env.actions)
-    else:
-        action = actions
-    print(action)
-    observation, reward, done, turn = env.step(action)
+if __name__ == '__main__':
+    env = OthelloEnv()
     env.render()
 
-print(done, reward)
+    env.step(26)
+    env.render()
+
+    env.step(18)
+    env.render()
+    # import random
+    # choice = random.choice(env.actions)
+
+    # observation, reward, done, turn = env.step(choice)
+    # env.render()
+
+    # while not done:
+    #     print("TAKING ACTION")
+    #     actions = env.actions
+    #     if actions != 64 and actions != 65:
+    #         action = random.choice(env.actions)
+    #     else:
+    #         action = actions
+    #     print(action)
+    #     observation, reward, done, turn = env.step(action)
+    #     env.render()
+
+    # print(done, reward)
+
+    # env.pop()
+    # env.render()
+    # print('\n')
+    # env.step(random.choice(env.actions))
+    # env.render()
