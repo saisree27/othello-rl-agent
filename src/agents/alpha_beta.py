@@ -118,6 +118,29 @@ class AlphaBeta():
                 best_move = move
         return best_move
 
+class AlphaBetaOthelloRunner():
+    def best_strategy(self, board, color):
+        if color == '#ffffff':
+            color = OthelloEnv.WHITE
+        else:
+            color = OthelloEnv.BLACK
+
+        state = np.zeros(64)
+        counter = 0
+        for row in board:
+            for loc in row:
+                if loc == '.':
+                    state[counter] = 0
+                if loc == 'O':
+                    state[counter] = 1
+                if loc == '@':
+                    state[counter] = -1
+                counter += 1
+
+        agent = AlphaBeta(OthelloEnv(state, color))
+        index = agent.play()
+
+        return (index // 8, index % 8), 0
 
 if __name__ == '__main__':
     import random

@@ -2,7 +2,9 @@ import sys
 import os
 import time
 import tkinter as tk
-from bots import RandomBot, Minimax_AI_bot, Alpha_beta_AI_bot, Best_AI_bot
+from agents.minimax import MinimaxOthelloRunner
+from agents.random import RandomOthelloRunner
+from agents.alpha_beta import AlphaBetaOthelloRunner
 
 # constants
 delay_time = 0
@@ -204,21 +206,25 @@ def init(choice_menu, e1, e2, v1, v2):
     p1_name = players[black]
     p2_name = players[white]
     if players[black] == "Random":
-        players[black] = RandomBot()
+        players[black] = RandomOthelloRunner()
     elif players[black] == "Minimax AI":
-        players[black] = Minimax_AI_bot()
+        players[black] = MinimaxOthelloRunner()
     elif players[black] == "Alpha-beta AI":
-        players[black] = Alpha_beta_AI_bot()
+        players[black] = AlphaBetaOthelloRunner()
     elif players[black] == "Best AI":
-        players[black] == Best_AI_bot()
+        print('Not yet implemented')
+        return
+        # players[black] == Best_AI_bot()
     if players[white] == "Random":
-        players[white] = RandomBot()
+        players[white] = RandomOthelloRunner()
     elif players[white] == "Minimax AI":
-        players[white] = Minimax_AI_bot()
+        players[white] = MinimaxOthelloRunner()
     elif players[white] == "Alpha-beta AI":
-        players[white] = Alpha_beta_AI_bot()
+        players[white] = AlphaBetaOthelloRunner()
     elif players[white] == "Best AI":
-        players[white] = Best_AI_bot()
+        # players[white] = Best_AI_bot()
+        print('Not yet implemented')
+        return
     choice_menu.destroy()
     root = tk.Tk()
     root.title("Othello Game")
