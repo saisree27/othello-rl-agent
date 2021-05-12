@@ -9,7 +9,7 @@ import random
 
 class Agent():
     def __init__(self, cpuct, sims, model_file=None, env=OthelloEnv(), memory=None):
-        self.model = load_model(model_file) if model_file is not None else get_model()
+        self.model = load_model(model_file) if model_file is not None else self.get_model()
         self.env = env
         self.cpuct = cpuct
         self.sims = sims
@@ -53,20 +53,30 @@ class Agent():
         return model
     
     def act(self, state, turn, episode_num):
+        self.cpuct *= 0.999
+
         if self.mcts is None:
             self.build_new_MCTS(state)
         else:
             self.change_MCTS_root(state)
 
-        for simulation in range(sims):
+        for _ in range(self.sims):
             temp_env = OthelloEnv(state, turn)
-            # self.MCTS.search(temp_env, self.model) does search
-            # self.MCTS.pi is resulting policy
-        self.memory.append( (state, self.MCTS.pi(state), None, episode_num) ) # episode_num used to update rewards later
-        action = random.choices(len(self.MCTS.pi(state)), weights=self.MCTS.pi(s), k=1)
+            self.MCTS.search(temp_env, self.model)
+            # self.MCTS.pi is resulting policy after search
+        
+        mcts_pi = self.MCTS.pi(state)
+        cpuct_pi = [(p + self.cpuct) for p in mcts_pi]
+        cpuct_pi = cpuct_pi / sum(cpuct_pi)
+
+        action = random.choices(len(cpuct_pi), weights=cpuct_pi, k=1)
         return action
     
-    def update_memory(episode_num, reward):
+    def add_to_memory(self, state, turn, episode_num):
+        self.memory.append( (state, self.MCTS.pi(state), None, episode_num) ) # episode_num used to update rewards later
+        return
+
+    def update_memory(self, episode_num, reward):
         for i in range(len(self.memory)):
             if self.memory[i][3] == episode_num:
                 self.memory[i][2] = reward
@@ -95,4 +105,8 @@ class Agent():
         '''
         Changes root node of self.MCTS
         '''
+        return
+    
+    def save(self, filename):
+        self.model.save(filename)
         return
