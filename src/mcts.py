@@ -2,7 +2,7 @@
 import math
 import random
 from copy import deepcopy
-from src.env import OthelloEnv
+from env import OthelloEnv
 
 
 class MCTS():
