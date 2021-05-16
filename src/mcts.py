@@ -9,7 +9,7 @@ class MCTS():
     def __init__(self, state, env, explore_weight=0.5):
         """Initialize a root node with its children and set explore weight"""
         self.root = Node(state, env.player_to_move)
-        self.root.children = env.possible_actions()
+        self.expand(self.root)
         self.explore_weight = explore_weight  # TODO: Determine best explore_weight
 
     def search(self, env, model, iter=5):
