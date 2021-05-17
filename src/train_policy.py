@@ -17,10 +17,10 @@ if gpus:
         # Memory growth must be set before GPUs have been initialized
         print(e)
 
-BATCH_SIZE = 500
-EPOCHS = 25
+BATCH_SIZE = 4096
+EPOCHS = 15
 
-training_data = np.load('training_data.npy', allow_pickle=True)
+training_data = np.load('saves/training_data.npy', allow_pickle=True)
 
 agent = Agent()
 
@@ -63,4 +63,4 @@ for epoch in range(EPOCHS):
     agent.model.fit(X, Y, epochs=1, verbose=True, batch_size=1)
 
 
-agent.save('trained_model.h5')
+agent.save('saves/trained_model.h5')

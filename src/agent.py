@@ -16,7 +16,7 @@ class Agent():
         self.memory = [] if memory is None else memory
         self.epochs = 50
         self.batch_size = 100
-        self.learning_rate = 0.001
+        self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
 
 
@@ -38,7 +38,7 @@ class Agent():
         y_policy = BatchNormalization(axis=1)(y_policy)
         y_policy = LeakyReLU()(y_policy)
         y_policy = Flatten()(y_policy)
-        y_policy = Dense(66, name='policy_output')(y_policy)
+        y_policy = Dense(66, name='policy_output', activation='softmax')(y_policy)
         
         y_val = Conv2D(filters=1, kernel_size=(1,1))(x)
         y_val = BatchNormalization(axis=1)(y_val)
