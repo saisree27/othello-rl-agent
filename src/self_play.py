@@ -1,5 +1,6 @@
 from env import OthelloEnv
 from agent import Agent
+from copy import deepcopy
 
 def policy_iteration(num_episodes, cont_training=False, model_file=None):
     print('-------STARTING POLICY ITERATION-------')
@@ -14,26 +15,28 @@ def policy_iteration(num_episodes, cont_training=False, model_file=None):
             print(f'-------EPISODE {i}-------')
             episode(agent, i)
             print(f'--------FINISHED---------')
-            if len(agent.memory) > 10000:
+            print(f'LENGTH OF AGENT MEMORY: {len(agent.memory)}')
+
+            if len(agent.memory) > 1000:
                 print(f'---------TRAINING--------')
                 agent.replay_and_train()
-                agent.save('BestModel.h5')
+                agent.save('selfplay.h5')
                 print(f'-------MODEL SAVED-------')
 
 def episode(agent, num):
     env = OthelloEnv()
     state = env.state
-
+    turn = env.player_to_move
     while True:
         action = agent.act(state, env.player_to_move, num)
         print(action)
-        agent.add_to_memory(state, num)
+        agent.add_to_memory(deepcopy(state), num, turn)
         state, reward, done, turn  = env.step(action[0])
-
-        env.render()
 
         if done:
             agent.update_memory(num, reward)
+            env.render()
+            print("BLACK WINS!" if done == -1 else "WHITE WINS!")
             return
 
-policy_iteration(10, cont_training=True, model_file='saves/trained_model.h5')
+policy_iteration(10, cont_training=True, model_file='saves/trained_model_corrected.h5')

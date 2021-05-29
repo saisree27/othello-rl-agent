@@ -20,7 +20,7 @@ if gpus:
 BATCH_SIZE = 4096
 EPOCHS = 15
 
-training_data = np.load('saves/training_data.npy', allow_pickle=True)
+training_data = np.load('saves/training_data_corrected.npy', allow_pickle=True)
 
 agent = Agent()
 
@@ -29,30 +29,17 @@ for epoch in range(EPOCHS):
     batch = np.random.choice(training_data.shape[0], BATCH_SIZE)
     batch = training_data[batch]
 
-    X = np.array([b[0] for b in batch])
+    X = np.array([b[0] * b[3] for b in batch])
 
     new_X = []
 
     for board in X:
-        one_hot_encoded_black = np.zeros(64)
-        one_hot_encoded_white = np.zeros(64)
-        # print(board)
-        for i, piece in enumerate(board):
-            if piece < 0:
-                one_hot_encoded_black[i] = 1
-            elif piece > 0:
-                one_hot_encoded_white[i] = 1
-        
-        one_hot_encoded_black = np.reshape( one_hot_encoded_black, (8,8) )
-        one_hot_encoded_white = np.reshape( one_hot_encoded_white, (8,8) )
-
-        new_board = np.reshape(np.append(one_hot_encoded_black, one_hot_encoded_white), (2, 8, 8))
-
+        new_board = np.reshape(board,  (1, 8, 8))
         new_X.append(new_board)
     
     X = np.array(new_X)
     Y_pi = np.array([b[1] for b in batch])
-    Y_val = np.array([b[2] for b in batch])
+    Y_val = np.array([b[2] * b[3] for b in batch])
 
 
     X = np.asarray(X).astype('float32')
@@ -63,4 +50,4 @@ for epoch in range(EPOCHS):
     agent.model.fit(X, Y, epochs=1, verbose=True, batch_size=1)
 
 
-agent.save('saves/trained_model.h5')
+agent.save('saves/trained_model_corrected.h5')

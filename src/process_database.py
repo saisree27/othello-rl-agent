@@ -1,7 +1,7 @@
 from env import OthelloEnv
 import numpy as np
 from tqdm import tqdm
-
+from copy import deepcopy
 
 squares = {
     'A1': 0,  'A2': 1,  'A3': 2,  'A4': 3,  'A5': 4,  'A6': 5,  'A7': 6,  'A8': 7,
@@ -26,30 +26,31 @@ def process_txt(filename):
         if line is not None:
             moves_list = moves(line)
             env, done, reward = OthelloEnv(), False, 0
+            state = env.state
             for move in moves_list:
                 if env.actions[0] in [64, 65]:
-                    state, reward, done, turn = env.step(env.actions[0])
                     policy = np.zeros(66)
                     policy[env.actions[0]] = 1
-                    dataset.append( [state, policy, None, i] )
+                    dataset.append( [state, policy, None, i, env.player_to_move] )
+                    state, reward, done, _ = env.step(env.actions[0])
 
                 if not done:
-                    state, reward, done, turn =  env.step(move)
                     policy = np.zeros(66)
                     policy[move] = 1
-                    dataset.append( [state, policy, None, i] )
+                    dataset.append( [state, policy, None, i, env.player_to_move] )
+                    state, reward, done, _ =  env.step(move)
                 
                 if done:
                     for entry in dataset:
                         if entry[3] == i:
                             entry[2] = reward
     
-    np_dataset = np.array([np.array([state, policy, reward]) for state, policy, reward, _ in dataset])
+    np_dataset = np.array([np.array([state, policy, reward, turn]) for state, policy, reward, _, turn in dataset])
     return np_dataset
 
-dataset = process_txt('WTH_2018.txt')
+dataset = process_txt('saves\WTH_2018.txt')
 print(dataset.shape)
 
 print(dataset[0])
 
-np.save('training_data.npy', dataset)
+np.save('training_data_corrected.npy', dataset)

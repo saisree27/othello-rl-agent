@@ -15,7 +15,7 @@ class Agent():
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
         self.epochs = 50
-        self.batch_size = 100
+        self.batch_size = 50
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
 
@@ -23,7 +23,7 @@ class Agent():
     def get_model(self):
         # random model from connect4 example, optimize later
 
-        board_input = Input(shape=(2,8,8), name='board')
+        board_input = Input(shape=(1,8,8), name='board')
         x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(board_input)
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
@@ -83,8 +83,8 @@ class Agent():
         
         return action
     
-    def add_to_memory(self, state, episode_num):
-        self.memory.append( [state, deepcopy(self.MCTS.pi), None, episode_num] ) # episode_num used to update rewards later
+    def add_to_memory(self, state, episode_num, turn):
+        self.memory.append( [state, deepcopy(self.MCTS.pi), None, episode_num, turn] ) # episode_num used to update rewards later
         return
 
     def update_memory(self, episode_num, reward):
@@ -97,20 +97,7 @@ class Agent():
         new_X = []
 
         for board in boards:
-            one_hot_encoded_black = np.zeros(64)
-            one_hot_encoded_white = np.zeros(64)
-            # print(board)
-            for i, piece in enumerate(board):
-                if piece < 0:
-                    one_hot_encoded_black[i] = 1
-                elif piece > 0:
-                    one_hot_encoded_white[i] = 1
-            
-            one_hot_encoded_black = np.reshape( one_hot_encoded_black, (8,8) )
-            one_hot_encoded_white = np.reshape( one_hot_encoded_white, (8,8) )
-
-            new_board = np.reshape(np.append(one_hot_encoded_black, one_hot_encoded_white), (2, 8, 8))
-
+            new_board = np.reshape(board, (1, 8, 8))
             new_X.append(new_board)
         
         return np.array(new_X)
@@ -121,11 +108,11 @@ class Agent():
             print(f'EPOCH {epoch}')
 
             batch = random.sample(self.memory, self.batch_size)
-            X = np.array([b[0] for b in batch])
+            X = np.array([b[0] * b[3] for b in batch])
             X = self.convert_to_model_input(X)
 
             Y_pi = np.array(b[1] for b in batch)
-            Y_val = np.array(b[2] for b in batch)
+            Y_val = np.array(b[2] * b[3] for b in batch)
 
 
             X = np.asarray(X).astype('float32')
