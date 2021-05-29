@@ -14,8 +14,8 @@ class Agent():
         self.sims = sims
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
-        self.epochs = 50
-        self.batch_size = 50
+        self.epochs = 10
+        self.batch_size = 200
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
 
@@ -111,8 +111,8 @@ class Agent():
             X = np.array([b[0] * b[3] for b in batch])
             X = self.convert_to_model_input(X)
 
-            Y_pi = np.array(b[1] for b in batch)
-            Y_val = np.array(b[2] * b[3] for b in batch)
+            Y_pi = np.array([b[1] for b in batch])
+            Y_val = np.array([b[2] * b[3] for b in batch])
 
 
             X = np.asarray(X).astype('float32')
