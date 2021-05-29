@@ -55,10 +55,10 @@ class Agent():
         return model
     
     def act(self, state, turn, episode_num):
-        print("AGENT TAKING ACTION")
+        # print("AGENT TAKING ACTION")
         self.cpuct *= 0.999
 
-        print("RUNNING MONTE-CARLO SIMS")
+        # print("RUNNING MONTE-CARLO SIMS")
 
         self.build_new_MCTS(deepcopy(state), turn)
         self.MCTS.simulate()
