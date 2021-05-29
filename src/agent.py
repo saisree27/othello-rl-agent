@@ -6,7 +6,7 @@ from tensorflow.keras.models import Sequential, load_model, Model
 from tensorflow.keras.layers import Input, Dense, Activation, Flatten, BatchNormalization, Conv2D, LeakyReLU
 from tensorflow.keras.losses import CategoricalCrossentropy
 import random
-
+from copy import deepcopy
 class Agent():
     def __init__(self, cpuct=1, sims=25, model_file=None, env=OthelloEnv(), memory=None):
         self.env = env
@@ -55,27 +55,36 @@ class Agent():
         return model
     
     def act(self, state, turn, episode_num):
+        print("AGENT TAKING ACTION")
         self.cpuct *= 0.999
 
-        if self.mcts is None:
-            self.build_new_MCTS(state)
-        else:
-            self.change_MCTS_root(state)
+        print("RUNNING MONTE-CARLO SIMS")
 
-        for _ in range(self.sims):
-            temp_env = OthelloEnv(state, turn)
-            self.MCTS.search(temp_env, self.model)
-            # self.MCTS.pi is resulting policy after search
+        self.build_new_MCTS(deepcopy(state), turn)
+        self.MCTS.simulate()
         
-        mcts_pi = self.MCTS.pi(state)
-        cpuct_pi = [(p + self.cpuct) for p in mcts_pi]
-        cpuct_pi = cpuct_pi / sum(cpuct_pi)
+        mcts_pi = self.MCTS.pi
+        # print("MCTS POLICY:")
+        # print(mcts_pi)
 
-        action = random.choices(len(cpuct_pi), weights=cpuct_pi, k=1)
+        cpuct_pi = [(p + self.cpuct) for p in mcts_pi]
+
+        mask = np.zeros(66)
+        for i, x in enumerate(mcts_pi):
+            if x != 0:
+                mask[i] = 1
+        
+        cpuct_pi *= mask
+        cpuct_pi /= np.sum(cpuct_pi)
+
+        # print(cpuct_pi)
+
+        action = random.choices([x for x in range(len(cpuct_pi))], weights=cpuct_pi, k=1)
+        
         return action
     
-    def add_to_memory(self, state, turn, episode_num):
-        self.memory.append( [state, self.MCTS.pi(state), None, episode_num] ) # episode_num used to update rewards later
+    def add_to_memory(self, state, episode_num):
+        self.memory.append( [state, deepcopy(self.MCTS.pi), None, episode_num] ) # episode_num used to update rewards later
         return
 
     def update_memory(self, episode_num, reward):
@@ -128,17 +137,11 @@ class Agent():
             self.model.fit(X, Y, epochs=1, verbose=True, batch_size=1)
         return
     
-    def build_new_MCTS(self, state):
+    def build_new_MCTS(self, state, turn):
         '''
         Builds new MCTS tree and assigns to self.MCTS
         '''
-        self.MCTS = MCTS(state)
-        return
-    
-    def change_MCTS_root(self, state):
-        '''
-        Changes root node of self.MCTS
-        '''
+        self.MCTS = MCTS(state, OthelloEnv(state, turn), self.model)
         return
     
     def save(self, filename):

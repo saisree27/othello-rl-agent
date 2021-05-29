@@ -1,7 +1,5 @@
 from env import OthelloEnv
 from agent import Agent
-from mcts import MCTS
-from copy import deepcopy
 
 def policy_iteration(num_episodes, cont_training=False, model_file=None):
     print('-------STARTING POLICY ITERATION-------')
@@ -23,14 +21,19 @@ def policy_iteration(num_episodes, cont_training=False, model_file=None):
                 print(f'-------MODEL SAVED-------')
 
 def episode(agent, num):
-    state = agent.env.state
-    agent.build_new_MCTS()
+    env = OthelloEnv()
+    state = env.state
 
     while True:
-        action = agent.act()
-        agent.add_to_memory( (state, agent.mcts.pi(state), None, num) )
-        state, reward, done, turn  = agent.env.step(action)
-        
+        action = agent.act(state, env.player_to_move, num)
+        print(action)
+        agent.add_to_memory(state, num)
+        state, reward, done, turn  = env.step(action[0])
+
+        env.render()
+
         if done:
             agent.update_memory(num, reward)
             return
+
+policy_iteration(10, cont_training=True, model_file='saves/trained_model.h5')

@@ -162,6 +162,28 @@ class OthelloEnv():
     def winner(self):
         return OthelloEnv.BLACK if sum(self.state) < 0 else OthelloEnv.WHITE
 
+    def convert_to_model_input(self, boards):
+        new_X = []
+
+        for board in boards:
+            one_hot_encoded_black = np.zeros(64)
+            one_hot_encoded_white = np.zeros(64)
+            # print(board)
+            for i, piece in enumerate(board):
+                if piece < 0:
+                    one_hot_encoded_black[i] = 1
+                elif piece > 0:
+                    one_hot_encoded_white[i] = 1
+            
+            one_hot_encoded_black = np.reshape( one_hot_encoded_black, (8,8) )
+            one_hot_encoded_white = np.reshape( one_hot_encoded_white, (8,8) )
+
+            new_board = np.reshape(np.append(one_hot_encoded_black, one_hot_encoded_white), (2, 8, 8))
+
+            new_X.append(new_board)
+        
+        return np.array(new_X)
+
     def render(self):
         white = '⚪'
         black = '⚫'
