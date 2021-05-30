@@ -30,19 +30,19 @@ def policy_iteration(num_episodes, cont_training=False, model_file=None):
     print(f'LENGTH OF AGENT MEMORY: {len(agent.memory)}')
 
     for i in range(num_episodes):
-        print(f'-------EPISODE {i}-------')
+        print(f'---------------------EPISODE {i}-------------------------')
         episode(agent, i)
-        print('--------FINISHED---------')
+        print('----------------------FINISHED-----------------------------')
         print(f'LENGTH OF AGENT MEMORY: {len(agent.memory)}')
 
-        if len(agent.memory) > 5000:
-            print('---------TRAINING--------')
+        if len(agent.memory) > 3000:
+            print('----------------------TRAINING-------------------------------------')
             agent.replay_and_train()
             agent.save('saves/selfplay_correct.h5')
-            print('-------MODEL SAVED-------')
-            print('------SAVING MEMORY------')
+            print('--------------------MODEL SAVED--------------------------------------')
+            print('-------------------------SAVING MEMORY------------------------')
             pickle.dump(agent.memory, open('saves/selfplaymemory_correct.obj', 'wb'))
-            print('--------FINISHED---------')
+            print('-----------------------------FINISHED-------------------------------')
 
 def episode(agent, num):
     env = OthelloEnv()
@@ -53,6 +53,9 @@ def episode(agent, num):
         # print(action)
         agent.add_to_memory(deepcopy(state), num, turn)
         state, reward, done, turn  = env.step(action[0])
+        
+        env.render()
+        print('\n')
 
         if done:
             agent.update_memory(num, reward)
