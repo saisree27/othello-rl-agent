@@ -8,17 +8,17 @@ from tensorflow.keras.losses import CategoricalCrossentropy
 import random
 from copy import deepcopy
 class Agent():
-    def __init__(self, cpuct=1, sims=25, model_file=None, env=OthelloEnv(), memory=None):
+    def __init__(self, cpuct=1, sims=25, model_file=None, env=OthelloEnv(), memory=None, deterministic=False):
         self.env = env
         self.cpuct = cpuct
         self.sims = sims
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
         self.epochs = 10
-        self.batch_size = 200
+        self.batch_size = 400
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
-
+        self.deterministic = deterministic
 
     def get_model(self):
         # random model from connect4 example, optimize later
@@ -78,8 +78,10 @@ class Agent():
         cpuct_pi /= np.sum(cpuct_pi)
 
         # print(cpuct_pi)
-
-        action = random.choices([x for x in range(len(cpuct_pi))], weights=cpuct_pi, k=1)
+        if self.deterministic:
+            action = [np.argmax(cpuct_pi)]
+        else:
+            action = random.choices([x for x in range(len(cpuct_pi))], weights=cpuct_pi, k=1)
         
         return action
     
@@ -108,11 +110,11 @@ class Agent():
             print(f'EPOCH {epoch}')
 
             batch = random.sample(self.memory, self.batch_size)
-            X = np.array([b[0] * b[3] for b in batch])
+            X = np.array([b[0] * b[4] for b in batch])
             X = self.convert_to_model_input(X)
 
             Y_pi = np.array([b[1] for b in batch])
-            Y_val = np.array([b[2] * b[3] for b in batch])
+            Y_val = np.array([b[2] * b[4] for b in batch])
 
 
             X = np.asarray(X).astype('float32')

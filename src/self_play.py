@@ -59,4 +59,4 @@ def episode(agent, num):
             print("BLACK WINS!" if reward == -1 else "WHITE WINS!")
             return
 
-policy_iteration(1000000, cont_training=True, model_file='saves/trained_model_corrected.h5')
+policy_iteration(1000000, cont_training=True, model_file='saves/selfplay.h5')
