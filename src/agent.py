@@ -15,7 +15,7 @@ class Agent():
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
         self.epochs = 10
-        self.batch_size = 400
+        self.batch_size = 500
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
         self.deterministic = deterministic
@@ -64,24 +64,20 @@ class Agent():
         self.MCTS.simulate()
         
         mcts_pi = self.MCTS.pi
-        # print("MCTS POLICY:")
-        # print(mcts_pi)
-
-        cpuct_pi = [(p + self.cpuct) for p in mcts_pi]
 
         mask = np.zeros(66)
         for i, x in enumerate(mcts_pi):
             if x != 0:
                 mask[i] = 1
         
-        cpuct_pi *= mask
-        cpuct_pi /= np.sum(cpuct_pi)
+        mcts_pi *= mask
+        mcts_pi /= np.sum(mcts_pi)
 
         # print(cpuct_pi)
         if self.deterministic:
-            action = [np.argmax(cpuct_pi)]
+            action = [np.argmax(mcts_pi)]
         else:
-            action = random.choices([x for x in range(len(cpuct_pi))], weights=cpuct_pi, k=1)
+            action = random.choices([x for x in range(len(mcts_pi))], weights=mcts_pi, k=1)
         
         return action
     
@@ -130,7 +126,7 @@ class Agent():
         '''
         Builds new MCTS tree and assigns to self.MCTS
         '''
-        self.MCTS = MCTS(state, OthelloEnv(state, turn), self.model)
+        self.MCTS = MCTS(state, OthelloEnv(state, turn), self.model, sims=self.sims, explore_weight=self.cpuct)
         return
     
     def save(self, filename):

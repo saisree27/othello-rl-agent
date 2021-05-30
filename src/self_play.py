@@ -20,9 +20,10 @@ if gpus:
 def policy_iteration(num_episodes, cont_training=False, model_file=None):
     print('-------STARTING POLICY ITERATION-------')
     agent = None
-    memory = pickle.load(open('saves/selfplaymemory.obj', 'rb'))
+    memory = pickle.load(open('saves/selfplaymemory_new.obj', 'rb'))
+    # memory = []
     if cont_training:
-        agent = Agent(1, 25, model_file=model_file, memory=memory)
+        agent = Agent(0.43, 25, model_file=model_file, memory=memory)
     else:
         agent = Agent(1, 25, memory=memory)
 
@@ -34,13 +35,13 @@ def policy_iteration(num_episodes, cont_training=False, model_file=None):
         print('--------FINISHED---------')
         print(f'LENGTH OF AGENT MEMORY: {len(agent.memory)}')
 
-        if len(agent.memory) > 2000:
+        if len(agent.memory) > 5000:
             print('---------TRAINING--------')
             agent.replay_and_train()
-            agent.save('saves/selfplay.h5')
+            agent.save('saves/selfplay_new.h5')
             print('-------MODEL SAVED-------')
             print('------SAVING MEMORY------')
-            pickle.dump(agent.memory, open('saves/selfplaymemory.obj', 'wb'))
+            pickle.dump(agent.memory, open('saves/selfplaymemory_new.obj', 'wb'))
             print('--------FINISHED---------')
 
 def episode(agent, num):

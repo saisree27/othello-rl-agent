@@ -5,6 +5,7 @@ import tensorflow as tf
 import numpy as np
 from agents.alpha_beta import AlphaBeta
 from agents.minimax import MinimaxOthelloRunner
+from copy import deepcopy
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -29,27 +30,18 @@ def play_against_alpha_beta(agent, color):
     reward = 0
     while not done:
         if turn == color:
-            # change this to agent.act once mcts finished
-            # literally just using human-like policy and no simulations, so this does not do very well
-            model_input = agent.convert_to_model_input([game.state])
-            policy, _ = agent.model.predict(model_input)
-            mask = np.zeros(66)
-            for x in game.actions:
-                mask[x] = 1
-
-            policy = policy[0]
-
-            policy = policy * mask
-        
-            move = np.argmax(policy)
+            move = agent.act(game.state, game.player_to_move, -99)
+            move = move[0]
             print(move)
             _, reward, done, turn = game.step(move)
         else:
-            alphabeta = AlphaBeta(OthelloEnv(game.state, turn))
+            alphabeta = AlphaBeta(OthelloEnv(deepcopy(game.state), turn))
             move = alphabeta.play()
 
             _, reward, done, turn = game.step(move)
         game.render()
+        print('\n')
+    return reward
 
 def play_against_random(agent, color):
     game = OthelloEnv()
@@ -71,7 +63,7 @@ def play_against_random(agent, color):
     return reward
 
 
-agent = Agent(model_file='saves/selfplay.h5', cpuct=0, deterministic=True)
+agent = Agent(model_file='saves/selfplay_new.h5', cpuct=0, sims=50, deterministic=True)
 
 print('#1: AlphaBeta')
 print('#2: Random')

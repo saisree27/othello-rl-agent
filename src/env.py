@@ -34,7 +34,7 @@ class OthelloEnv():
             self.reward = result if self.done else 0
             self.player_to_move *= -1
             self.actions = self.possible_actions()
-            return observation, self.reward, self.done, self.player_to_move
+            return np.copy(observation), self.reward, self.done, self.player_to_move
 
         color = self.player_to_move
         self.state[action] = color
@@ -60,7 +60,7 @@ class OthelloEnv():
         self.reward = result if self.done else 0
         self.player_to_move *= -1
         self.actions = self.possible_actions()
-        return observation, self.reward, self.done, self.player_to_move        
+        return np.copy(observation), self.reward, self.done, self.player_to_move        
 
     def pop(self):
         self.state = self.prev_state
