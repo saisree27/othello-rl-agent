@@ -65,14 +65,6 @@ class Agent():
         
         mcts_pi = self.MCTS.pi
 
-        mask = np.zeros(66)
-        for i, x in enumerate(mcts_pi):
-            if x != 0:
-                mask[i] = 1
-        
-        mcts_pi *= mask
-        mcts_pi /= np.sum(mcts_pi)
-
         # print(cpuct_pi)
         if self.deterministic:
             action = [np.argmax(mcts_pi)]
