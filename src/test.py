@@ -63,7 +63,8 @@ def play_against_random(agent, color):
     return reward
 
 
-agent = Agent(model_file='saves/selfplay_new.h5', cpuct=0, sims=50, deterministic=True)
+agent = Agent(model_file='saves/selfplay_correct.h5', cpuct=0, sims=50, deterministic=True)
+print(agent.model.summary())
 
 print('#1: AlphaBeta')
 print('#2: Random')

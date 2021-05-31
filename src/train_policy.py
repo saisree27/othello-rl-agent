@@ -17,12 +17,13 @@ if gpus:
         # Memory growth must be set before GPUs have been initialized
         print(e)
 
-BATCH_SIZE = 4096
-EPOCHS = 15
+BATCH_SIZE = 2048
+EPOCHS = 10
 
 training_data = np.load('saves/training_data_corrected.npy', allow_pickle=True)
 
 agent = Agent()
+print(agent.model.summary())
 
 for epoch in range(EPOCHS):
     print(f'EPOCH {epoch}')
@@ -46,8 +47,11 @@ for epoch in range(EPOCHS):
     Y_pi = np.asarray(Y_pi).astype('float32')
     Y_val = np.asarray(Y_val).astype('float32')
 
+    print(Y_val)
+    print(Y_pi)
+
     Y = {'policy_output': Y_pi, 'value_output': Y_val}
     agent.model.fit(X, Y, epochs=1, verbose=True, batch_size=1)
 
 
-agent.save('saves/trained_model_corrected.h5')
+agent.save('saves/large_model_human.h5')

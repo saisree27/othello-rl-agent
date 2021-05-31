@@ -53,4 +53,4 @@ print(dataset.shape)
 
 print(dataset[0])
 
-np.save('training_data_corrected.npy', dataset)
+np.save('saves/training_data_corrected.npy', dataset)
