@@ -22,7 +22,7 @@ EPOCHS = 10
 
 training_data = np.load('saves/training_data_corrected.npy', allow_pickle=True)
 
-agent = Agent()
+agent = Agent(large_model=True)
 print(agent.model.summary())
 
 for epoch in range(EPOCHS):
@@ -54,4 +54,4 @@ for epoch in range(EPOCHS):
     agent.model.fit(X, Y, epochs=1, verbose=True, batch_size=1)
 
 
-agent.save('saves/large_model_human.h5')
+agent.save('saves/large_model_trained_database.h5')

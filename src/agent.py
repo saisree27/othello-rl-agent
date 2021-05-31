@@ -4,28 +4,67 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model, Model
 from tensorflow.keras.layers import Input, Dense, Activation, Flatten, BatchNormalization, Conv2D, LeakyReLU
-
+from tensorflow.keras.losses import CategoricalCrossentropy
 import random
 from copy import deepcopy
-
 class Agent():
-    def __init__(self, cpuct=1, sims=25, model_file=None, env=OthelloEnv(), memory=None, deterministic=False):
+    def __init__(self, cpuct=1, sims=25, model_file=None, env=OthelloEnv(), memory=None, deterministic=False, large_model=False):
+        self.large_model = large_model
         self.env = env
         self.cpuct = cpuct
         self.sims = sims
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
         self.epochs = 10
-        self.batch_size = 512
+        self.batch_size = 400
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
         self.deterministic = deterministic
 
     def get_model(self):
+        if self.large_model:
+            return self.get_larger_model()
+        else:
+            return self.get_small_model()
+
+    def get_small_model(self):
         # random model from connect4 example, optimize later
 
         board_input = Input(shape=(1,8,8), name='board')
-        x = Conv2D(filters=512, kernel_size=(6,6), padding='same')(board_input)
+        x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(board_input)
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
+        x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(board_input)
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
+        x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(board_input)
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
+
+        y_policy = Conv2D(filters=2, kernel_size=(1,1))(x)
+        y_policy = BatchNormalization(axis=1)(y_policy)
+        y_policy = LeakyReLU()(y_policy)
+        y_policy = Flatten()(y_policy)
+        y_policy = Dense(66, name='policy_output', activation='softmax')(y_policy)
+        
+        y_val = Conv2D(filters=1, kernel_size=(1,1))(x)
+        y_val = BatchNormalization(axis=1)(y_val)
+        y_val = LeakyReLU()(y_val)
+        y_val = Flatten()(y_val)
+        y_val = Dense(1, name='value_output')(y_val)
+
+        model = Model(inputs=[board_input], outputs=[y_policy, y_val])
+        model.compile(loss={'value_output': 'mean_squared_error', 'policy_output': CategoricalCrossentropy()},
+			optimizer=tf.keras.optimizers.SGD(lr=self.learning_rate),	
+			loss_weights={'value_output': 0.5, 'policy_output': 0.5}	
+			)
+
+        return model
+    
+    def get_larger_model(self):
+
+        board_input = Input(shape=(1,8,8), name='board')
+        x = Conv2D(filters=512, kernel_size=(4,4), padding='same')(board_input)
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
         x = Conv2D(filters=512, kernel_size=(4,4), padding='same')(x)
@@ -40,7 +79,7 @@ class Agent():
         x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(x)
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
-        x = Conv2D(filters=64, kernel_size=(4,4), padding='same')(x)
+        x = Conv2D(filters=128, kernel_size=(4,4), padding='same')(x)
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
 
@@ -48,14 +87,12 @@ class Agent():
         y_policy = BatchNormalization(axis=1)(y_policy)
         y_policy = LeakyReLU()(y_policy)
         y_policy = Flatten()(y_policy)
-        y_policy = Dense(2048)(y_policy)
         y_policy = Dense(66, name='policy_output', activation='softmax')(y_policy)
         
         y_val = Conv2D(filters=1, kernel_size=(1,1))(x)
         y_val = BatchNormalization(axis=1)(y_val)
         y_val = LeakyReLU()(y_val)
         y_val = Flatten()(y_val)
-        y_val = Dense(2048)(y_val)
         y_val = Dense(1, name='value_output')(y_val)
 
         model = Model(inputs=[board_input], outputs=[y_policy, y_val])
@@ -65,7 +102,7 @@ class Agent():
 			)
 
         return model
-    
+
     def act(self, state, turn, episode_num):
         # print("AGENT TAKING ACTION")
 
