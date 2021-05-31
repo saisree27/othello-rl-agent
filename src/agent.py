@@ -16,7 +16,7 @@ class Agent():
         self.MCTS = None # MCTS is built in build_new_MCTS()
         self.memory = [] if memory is None else memory
         self.epochs = 10
-        self.batch_size = 400
+        self.batch_size = 512
         self.learning_rate = 0.01
         self.model = load_model(model_file) if model_file is not None else self.get_model()
         self.deterministic = deterministic
@@ -68,9 +68,6 @@ class Agent():
     
     def act(self, state, turn, episode_num):
         # print("AGENT TAKING ACTION")
-        self.cpuct *= 0.999
-
-        # print("RUNNING MONTE-CARLO SIMS")
 
         self.build_new_MCTS(deepcopy(state), turn)
         self.MCTS.simulate()

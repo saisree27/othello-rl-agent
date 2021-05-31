@@ -25,7 +25,7 @@ def policy_iteration(num_episodes, cont_training=False, model_file=None):
     if cont_training:
         agent = Agent(0.5, 25, model_file=model_file, memory=memory)
     else:
-        agent = Agent(1, 25, memory=memory)
+        agent = Agent(0.5, 25, memory=memory)
 
     print(f'LENGTH OF AGENT MEMORY: {len(agent.memory)}')
 
