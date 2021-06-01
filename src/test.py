@@ -6,6 +6,8 @@ import numpy as np
 from agents.alpha_beta import AlphaBeta
 from agents.minimax import MinimaxOthelloRunner
 from copy import deepcopy
+from tensorflow.keras.utils import plot_model
+import pydot
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -49,6 +51,7 @@ def play_against_random(agent, color):
     turn = OthelloEnv.BLACK
     reward = 0
     while not done:
+        game.render()
         if turn == color:
             move = agent.act(game.state, game.player_to_move, -99)
             move = move[0]
@@ -57,14 +60,15 @@ def play_against_random(agent, color):
         else:
             print("RANDOM MOVE")
             _, reward, done, turn = game.step(random.choice(game.actions))
-        game.render()
         print('\n')
-    
+
+    game.render()
     return reward
 
 
 agent = Agent(model_file='saves/18k_post_0.4valueloss.h5', cpuct=0, sims=50, deterministic=True)
 print(agent.model.summary())
+plot_model(agent.model, 'small_model.png')
 
 print('#1: AlphaBeta')
 print('#2: Random')
